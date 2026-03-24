@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#7c3aed">
+  <title>DopaDeck — Your ADHD Activity Menu</title>
+  <meta name="description" content="No more staring at the ceiling. Pick your energy, pick your time, get one thing to do. Free, offline, no account.">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: #0f0e17;
+      color: #f0eeff;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .hero {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 60px 24px 40px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(124,58,237,.2);
+      border: 1px solid rgba(168,85,247,.4);
+      color: #a855f7;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: clamp(36px, 8vw, 56px);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #a855f7, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+    }
+    .subtitle {
+      font-size: 18px;
+      color: #8b87a8;
+      line-height: 1.6;
+      max-width: 440px;
+      margin: 0 auto 36px;
+    }
+    .cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      padding: 18px 40px;
+      border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 4px 24px rgba(124,58,237,.4);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .cta:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(124,58,237,.5); }
+    .cta-note { font-size: 13px; color: #8b87a8; margin-top: 12px; }
+    .features {
+      max-width: 640px;
+      margin: 60px auto 0;
+      padding: 0 24px 80px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .feature {
+      background: #1a1828;
+      border: 1px solid #2d2946;
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .feature-icon { font-size: 28px; margin-bottom: 10px; }
+    .feature-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .feature-desc { font-size: 13px; color: #8b87a8; line-height: 1.5; }
+    .mock {
+      max-width: 320px;
+      margin: 40px auto 0;
+      background: #1a1828;
+      border: 1px solid #2d2946;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: left;
+    }
+    .mock-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8b87a8; margin-bottom: 10px; }
+    .mock-chips { display: flex; gap: 8px; margin-bottom: 16px; }
+    .chip {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .chip-sel { background: rgba(245,158,11,.15); color: #f59e0b; border: 2px solid #f59e0b; }
+    .chip-un  { background: #231f35; color: #8b87a8; border: 2px solid #2d2946; }
+    .mock-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .mock-card {
+      background: #231f35;
+      border: 1px solid #2d2946;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .mock-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #7c3aed, #a855f7);
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="badge">🧠 Built for ADHD brains</div>
+    <h1>No more "I dunno what to do."</h1>
+    <p class="subtitle">Pick your energy. Pick your time. Get one activity to do right now — no decision fatigue, no overwhelm.</p>
+    <a href="index.html" class="cta">🃏 Open DopaDeck</a>
+    <p class="cta-note">Free · No account · Works offline · Install to home screen</p>
+
+    <div class="mock">
+      <div class="mock-label">Energy level right now</div>
+      <div class="mock-chips">
+        <div class="chip chip-un">🔋 Low</div>
+        <div class="chip chip-sel">⚡ Medium</div>
+        <div class="chip chip-un">🔥 High</div>
+      </div>
+      <div class="mock-label">Time available</div>
+      <div class="mock-chips">
+        <div class="chip chip-un">5m</div>
+        <div class="chip chip-sel">15m</div>
+        <div class="chip chip-un">30m</div>
+        <div class="chip chip-un">1hr</div>
+      </div>
+      <div class="mock-btn">🎴 Deal Me</div>
+      <div class="mock-card">
+        <div style="font-size:28px;margin-bottom:8px">🚶</div>
+        <div style="font-weight:700;margin-bottom:4px">Quick walk around the block</div>
+        <div style="color:#8b87a8;font-size:13px">No destination. Just move.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">🎯</div>
+      <div class="feature-title">Zero decision fatigue</div>
+      <div class="feature-desc">Two inputs. One answer. Exactly what your brain needs when it's stuck.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📱</div>
+      <div class="feature-title">Works offline</div>
+      <div class="feature-desc">Install it to your home screen. No internet needed, ever.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">✏️</div>
+      <div class="feature-title">Add your own</div>
+      <div class="feature-desc">50+ starter activities, plus you can add your own that actually fit your life.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-title">No account, no data</div>
+      <div class="feature-desc">Everything lives on your device. We don't see anything.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔥</div>
+      <div class="feature-title">Streak tracker</div>
+      <div class="feature-desc">One small win a day. That's all it takes. Watch it build.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">💜</div>
+      <div class="feature-title">ADHD-friendly UI</div>
+      <div class="feature-desc">Low noise, clear hierarchy, satisfying taps. Built by people who get it.</div>
+    </div>
+  </div>
+</body>
+</html>

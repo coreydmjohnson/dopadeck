@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="description" content="Pick your energy. Pick your time. Get a thing to do. No overwhelm, just one next step.">
+  <title>DopaDeck — Your ADHD Activity Menu</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root {
+      --bg: #0f0e17;
+      --surface: #1a1828;
+      --surface2: #231f35;
+      --border: #2d2946;
+      --text: #f0eeff;
+      --muted: #8b87a8;
+      --accent: #7c3aed;
+      --accent2: #a855f7;
+      --glow: rgba(124,58,237,0.25);
+
+      /* Energy colors */
+      --low: #22c55e;
+      --med: #f59e0b;
+      --high: #ef4444;
+
+      --radius: 16px;
+      --card-radius: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: none;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 20px 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent2), #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .streak-badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .streak-badge.active { color: var(--med); border-color: var(--med); }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 20px;
+      gap: 20px;
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* ── Selector buttons ── */
+    .selector-group {
+      display: flex;
+      gap: 8px;
+    }
+    .sel-btn {
+      flex: 1;
+      padding: 12px 8px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all .2s cubic-bezier(.34,1.56,.64,1);
+      user-select: none;
+    }
+    .sel-btn .icon { display: block; font-size: 20px; margin-bottom: 4px; }
+    .sel-btn.active-low  { border-color: var(--low);  background: rgba(34,197,94,.12);  color: var(--low); }
+    .sel-btn.active-med  { border-color: var(--med);  background: rgba(245,158,11,.12); color: var(--med); }
+    .sel-btn.active-high { border-color: var(--high); background: rgba(239,68,68,.12);  color: var(--high); }
+    .sel-btn.active-time { border-color: var(--accent2); background: rgba(168,85,247,.12); color: var(--accent2); }
+
+    /* ── Deal button ── */
+    .deal-btn {
+      width: 100%;
+      padding: 18px;
+      border-radius: var(--radius);
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: .3px;
+      box-shadow: 0 4px 20px var(--glow);
+      transition: transform .15s, box-shadow .15s;
+      -webkit-user-select: none;
+    }
+    .deal-btn:active { transform: scale(0.97); }
+    .deal-btn:disabled { opacity: .4; cursor: default; }
+
+    /* ── Activity card ── */
+    .card-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+    .activity-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 28px 24px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      animation: cardIn .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(16px) scale(0.96); }
+      to   { opacity: 1; transform: none; }
+    }
+    .activity-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .card-emoji { font-size: 44px; margin-bottom: 14px; display: block; }
+    .card-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .card-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--surface2);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .card-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .card-btn:hover { background: var(--border); color: var(--text); }
+    .card-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 20px;
+    }
+    .empty-state .big { font-size: 44px; display: block; margin-bottom: 12px; }
+
+    /* ── Swipe hint ── */
+    .swipe-hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: -8px;
+      opacity: .6;
+    }
+
+    /* ── Modals ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 480px;
+      padding: 24px 20px 40px;
+      max-height: 85dvh;
+      overflow-y: auto;
+      animation: slideUp .25s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: none; } }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .close-btn {
+      background: var(--surface2);
+      border: none;
+      color: var(--muted);
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .field-group { margin-bottom: 16px; }
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+    .field-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+    }
+    .field-input:focus { border-color: var(--accent2); }
+    select.field-input { appearance: none; }
+    .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-save {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-cancel {
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: none;
+      color: var(--muted);
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    /* Activity list in manage modal */
+    .activity-list-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .ali-emoji { font-size: 20px; flex-shrink: 0; }
+    .ali-info { flex: 1; min-width: 0; }
+    .ali-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ali-meta { font-size: 12px; color: var(--muted); }
+    .ali-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 4px; }
+    .ali-del:hover { color: var(--high); }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      justify-content: space-around;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 0 max(12px, env(safe-area-inset-bottom));
+    }
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 16px;
+      border-radius: 10px;
+      transition: color .15s;
+    }
+    .nav-btn .nav-icon { font-size: 22px; }
+    .nav-btn.active { color: var(--accent2); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🃏 DopaDeck</div>
+  <div class="streak-badge" id="streak-badge" onclick="showStreakInfo()">
+    🔥 <span id="streak-num">0</span> day streak
+  </div>
+</header>
+
+<main id="page-deck">
+  <!-- Energy selector -->
+  <div>
+    <div class="section-label">Energy level right now</div>
+    <div class="selector-group">
+      <button class="sel-btn" id="e-low"  onclick="setEnergy('low')">
+        <span class="icon">🔋</span>Low
+      </button>
+      <button class="sel-btn" id="e-med"  onclick="setEnergy('med')">
+        <span class="icon">⚡</span>Medium
+      </button>
+      <button class="sel-btn" id="e-high" onclick="setEnergy('high')">
+        <span class="icon">🔥</span>High
+      </button>
+    </div>
+  </div>
+
+  <!-- Time selector -->
+  <div>
+    <div class="section-label">Time available</div>
+    <div class="selector-group">
+      <button class="sel-btn" id="t-5"   onclick="setTime('5')"><span class="icon">⏱</span>5 min</button>
+      <button class="sel-btn" id="t-15"  onclick="setTime('15')"><span class="icon">⏱</span>15 min</button>
+      <button class="sel-btn" id="t-30"  onclick="setTime('30')"><span class="icon">⏱</span>30 min</button>
+      <button class="sel-btn" id="t-60"  onclick="setTime('60')"><span class="icon">⏱</span>1 hr</button>
+    </div>
+  </div>
+
+  <!-- Deal button -->
+  <button class="deal-btn" id="deal-btn" onclick="dealCard()" disabled>
+    🎴 Deal Me
+  </button>
+
+  <!-- Card area -->
+  <div class="card-area" id="card-area">
+    <div class="empty-state">
+      <span class="big">🧠</span>
+      Pick your energy + time, then hit Deal Me.
+    </div>
+  </div>
+
+  <div class="swipe-hint" id="swipe-hint" style="display:none">Tap card or swipe for another ↻</div>
+</main>
+
+<div id="page-manage" style="display:none">
+  <div style="max-width:480px;margin:0 auto;padding:24px 20px 60px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="font-size:18px;font-weight:700">My Activities</h2>
+      <button class="btn-save" style="padding:10px 16px;font-size:14px" onclick="openAddModal()">+ Add</button>
+    </div>
+    <div id="manage-list"></div>
+  </div>
+</div>
+
+<!-- Add/Edit modal -->
+<div class="modal-backdrop" id="add-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modal-title-text">Add Activity</span>
+      <button class="close-btn" onclick="closeModal('add-modal')">✕</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Emoji</label>
+      <input class="field-input" id="f-emoji" maxlength="4" placeholder="🎯" style="width:80px">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Activity name</label>
+      <input class="field-input" id="f-title" placeholder="e.g. Short walk outside">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Description (optional)</label>
+      <input class="field-input" id="f-desc" placeholder="Quick tip or context">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Energy level</label>
+      <select class="field-input" id="f-energy">
+        <option value="low">🔋 Low</option>
+        <option value="med">⚡ Medium</option>
+        <option value="high">🔥 High</option>
+        <option value="any">✨ Any</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Time needed</label>
+      <select class="field-input" id="f-time">
+        <option value="5">⏱ 5 min</option>
+        <option value="15">⏱ 15 min</option>
+        <option value="30">⏱ 30 min</option>
+        <option value="60">⏱ 1 hr</option>
+        <option value="any">✨ Any</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeModal('add-modal')">Cancel</button>
+      <button class="btn-save" onclick="saveActivity()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Streak info modal -->
+<div class="modal-backdrop" id="streak-modal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>🔥 Your Streak</span>
+      <button class="close-btn" onclick="closeModal('streak-modal')">✕</button>
+    </div>
+    <div id="streak-content" style="color:var(--muted);font-size:15px;line-height:1.7"></div>
+    <div class="btn-row">
+      <button class="btn-save" onclick="closeModal('streak-modal')">Got it</button>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <button class="nav-btn active" id="nav-deck" onclick="showPage('deck')">
+    <span class="nav-icon">🃏</span>Deck
+  </button>
+  <button class="nav-btn" id="nav-manage" onclick="showPage('manage')">
+    <span class="nav-icon">📋</span>Activities
+  </button>
+</nav>
+
+<script>
+// ── Starter activities ────────────────────────────────────────────────────────
+const STARTER = [
+  // Low energy, 5 min
+  {id:'s1',  emoji:'🫁', title:'Box breathing',       desc:'4 in, hold 4, out 4, hold 4. Two rounds.',                energy:'low', time:'5'},
+  {id:'s2',  emoji:'💧', title:'Drink a full glass of water', desc:'Stand up, drink slowly.',                          energy:'low', time:'5'},
+  {id:'s3',  emoji:'😮‍💨',title:'Progressive muscle relax',  desc:'Tense each muscle for 5s, release. Feet to head.',  energy:'low', time:'5'},
+  {id:'s4',  emoji:'👁️', title:'20-20-20 eye rest',   desc:'Look at something 20ft away for 20 seconds.',             energy:'low', time:'5'},
+  {id:'s5',  emoji:'✏️', title:'Brain dump',           desc:'Write everything in your head onto paper. Just drain it.',energy:'low', time:'5'},
+
+  // Low energy, 15 min
+  {id:'s6',  emoji:'🎵', title:'Listen to one song',   desc:'Headphones. Eyes closed. Just the music.',                energy:'low', time:'15'},
+  {id:'s7',  emoji:'📖', title:'Read one chapter',     desc:'Anything — novel, article, whatever interests you.',      energy:'low', time:'15'},
+  {id:'s8',  emoji:'🧘', title:'Guided meditation',    desc:'Open YouTube or Insight Timer. 10-minute beginner.',      energy:'low', time:'15'},
+  {id:'s9',  emoji:'🌿', title:'Tidy one small surface', desc:'Just one: desk, counter, nightstand. No more.',         energy:'low', time:'15'},
+  {id:'s10', emoji:'🛁', title:'Shower or face wash',  desc:'The reset. Even a quick one counts.',                     energy:'low', time:'15'},
+
+  // Low energy, 30 min
+  {id:'s11', emoji:'😴', title:'Nap (no guilt)',        desc:'Set a 25-minute timer. No phone. Seriously rest.',        energy:'low', time:'30'},
+  {id:'s12', emoji:'📺', title:'Watch one episode',    desc:'Something light. No catching up, just one.',              energy:'low', time:'30'},
+  {id:'s13', emoji:'🖊️', title:'Journal',              desc:'Stream of consciousness. No editing, just write.',        energy:'low', time:'30'},
+  {id:'s14', emoji:'🌅', title:'Sit outside',          desc:'No phone, no task. Just sit and look around.',            energy:'low', time:'30'},
+  {id:'s15', emoji:'🎨', title:'Color or doodle',      desc:'Mindless marks on paper. Adult coloring book works.',     energy:'low', time:'30'},
+
+  // Low energy, 60 min
+  {id:'s16', emoji:'🎬', title:'Watch a movie',        desc:'Intentional rest. Pick something you actually like.',     energy:'low', time:'60'},
+  {id:'s17', emoji:'🛁', title:'Long bath or shower',  desc:'Epsom salts. Hot water. No rush.',                       energy:'low', time:'60'},
+  {id:'s18', emoji:'📚', title:'Read for an hour',     desc:'Low stakes fiction is fine. Your brain is resting.',     energy:'low', time:'60'},
+
+  // Medium energy, 5 min
+  {id:'s19', emoji:'🚶', title:'Quick walk around the block', desc:'No destination. Just move.',                       energy:'med', time:'5'},
+  {id:'s20', emoji:'🕺', title:'Dance to one song',    desc:'Put on a banger. Move like no one\'s watching.',         energy:'med', time:'5'},
+  {id:'s21', emoji:'🧹', title:'Sweep or Swifer one room', desc:'Low stakes clean. Instant visible progress.',        energy:'med', time:'5'},
+  {id:'s22', emoji:'🏋️', title:'10 push-ups + 10 squats', desc:'No warm-up required. Just do the reps.',             energy:'med', time:'5'},
+  {id:'s23', emoji:'📧', title:'Reply to one message',  desc:'Just the one that\'s been hanging. Get it done.',       energy:'med', time:'5'},
+
+  // Medium energy, 15 min
+  {id:'s24', emoji:'🚲', title:'Bike ride or scooter', desc:'Around the neighborhood. Helmet on.',                    energy:'med', time:'15'},
+  {id:'s25', emoji:'🧹', title:'Clean out your bag/wallet', desc:'Empty it. Only put back what belongs.',             energy:'med', time:'15'},
+  {id:'s26', emoji:'📝', title:'Make a to-do list',    desc:'Brain dump → pick top 3 → that\'s your day.',           energy:'med', time:'15'},
+  {id:'s27', emoji:'📞', title:'Call someone',         desc:'Actual phone call. Not text. Someone you\'ve been meaning to call.', energy:'med', time:'15'},
+  {id:'s28', emoji:'🌱', title:'Water your plants',    desc:'Check them all. Trim dead leaves. Say hello.',           energy:'med', time:'15'},
+
+  // Medium energy, 30 min
+  {id:'s29', emoji:'🏃', title:'Go for a run or jog',  desc:'No distance goal. Just get out and come back.',         energy:'med', time:'30'},
+  {id:'s30', emoji:'🍳', title:'Cook something simple', desc:'Eggs, pasta, a smoothie. Hands-on focus.',              energy:'med', time:'30'},
+  {id:'s31', emoji:'🧹', title:'Deep clean one room',  desc:'Pick one room. Give it 30 full minutes.',               energy:'med', time:'30'},
+  {id:'s32', emoji:'🎸', title:'Play an instrument',   desc:'No goal. Just noodle around for 30 minutes.',           energy:'med', time:'30'},
+  {id:'s33', emoji:'🖼️', title:'Rearrange something',  desc:'Furniture, shelves, gallery wall. Make it yours.',      energy:'med', time:'30'},
+
+  // Medium energy, 60 min
+  {id:'s34', emoji:'🛒', title:'Grocery run',          desc:'Make a list first. Headphones in. Get it done.',        energy:'med', time:'60'},
+  {id:'s35', emoji:'🧺', title:'Laundry start to finish', desc:'Wash, dry, fold, put away. Full cycle.',             energy:'med', time:'60'},
+  {id:'s36', emoji:'🌲', title:'Hike or nature walk',  desc:'Leave the phone mostly pocketed. Look up.',             energy:'med', time:'60'},
+
+  // High energy, 5 min
+  {id:'s37', emoji:'💥', title:'Burpees',              desc:'As many as you can in 3 minutes. Go.',                  energy:'high', time:'5'},
+  {id:'s38', emoji:'🥊', title:'Shadow box',           desc:'Put on hype music. 3-minute round. Go hard.',           energy:'high', time:'5'},
+  {id:'s39', emoji:'🔊', title:'Scream + shake it out', desc:'Private space. Yell. Shake your body. Release it.',   energy:'high', time:'5'},
+
+  // High energy, 15 min
+  {id:'s40', emoji:'🏋️', title:'Quick HIIT workout',  desc:'20s on, 10s rest. Jumping jacks, squats, pushups x 5.', energy:'high', time:'15'},
+  {id:'s41', emoji:'🤸', title:'Yoga flow',            desc:'Sun salutations. 3 rounds. Move through it.',           energy:'high', time:'15'},
+  {id:'s42', emoji:'🎮', title:'High-action gaming',   desc:'Fast game, high stakes. Burn off the energy.',          energy:'high', time:'15'},
+
+  // High energy, 30 min
+  {id:'s43', emoji:'⚽', title:'Kick a ball around',   desc:'Park. No game needed. Just move with the ball.',        energy:'high', time:'30'},
+  {id:'s44', emoji:'🏊', title:'Swim laps',            desc:'If a pool\'s nearby, go. 20 minutes is plenty.',       energy:'high', time:'30'},
+  {id:'s45', emoji:'🏗️', title:'Build or assemble something', desc:'Furniture, LEGO, a project. Hands moving.',     energy:'high', time:'30'},
+
+  // High energy, 60 min
+  {id:'s46', emoji:'🏄', title:'Go somewhere new',     desc:'Drive or walk somewhere you\'ve never been. Explore.',  energy:'high', time:'60'},
+  {id:'s47', emoji:'🎉', title:'Host or invite someone', desc:'Text someone to come over. Even 1 hour of social.', energy:'high', time:'60'},
+  {id:'s48', emoji:'🛠️', title:'Tackle a big task',   desc:'The one you\'ve been avoiding. Set a timer. Start.',   energy:'high', time:'60'},
+
+  // "any" energy/time wildcards
+  {id:'s49', emoji:'📸', title:'Take 10 photos',       desc:'Of anything. Your space, outside, whatever you notice.', energy:'any', time:'5'},
+  {id:'s50', emoji:'😂', title:'Watch something funny', desc:'YouTube shorts, TikTok, or a sitcom. Just laugh.',     energy:'any', time:'15'},
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let selectedEnergy = null;
+let selectedTime   = null;
+let currentCard    = null;
+let editingId      = null;
+let touchStartX    = 0;
+let currentPage    = 'deck';
+
+function getCustom() {
+  try { return JSON.parse(localStorage.getItem('dopadeck_custom') || '[]'); } catch { return []; }
+}
+function setCustom(arr) { localStorage.setItem('dopadeck_custom', JSON.stringify(arr)); }
+
+function getAllActivities() { return [...STARTER, ...getCustom()]; }
+
+// ── Streak ────────────────────────────────────────────────────────────────────
+function getStreak() {
+  try { return JSON.parse(localStorage.getItem('dopadeck_streak') || '{"count":0,"last":""}'); }
+  catch { return {count:0, last:''}; }
+}
+function updateStreak() {
+  const today = new Date().toDateString();
+  const s = getStreak();
+  if (s.last === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (s.last === yesterday) { s.count++; }
+  else { s.count = 1; }
+  s.last = today;
+  localStorage.setItem('dopadeck_streak', JSON.stringify(s));
+  renderStreak();
+}
+function renderStreak() {
+  const s = getStreak();
+  document.getElementById('streak-num').textContent = s.count;
+  document.getElementById('streak-badge').classList.toggle('active', s.count > 0);
+}
+renderStreak();
+
+// ── Selectors ─────────────────────────────────────────────────────────────────
+function setEnergy(val) {
+  selectedEnergy = val;
+  ['low','med','high'].forEach(v => {
+    const el = document.getElementById('e-'+v);
+    el.className = 'sel-btn' + (v===val ? ' active-'+v : '');
+  });
+  updateDealBtn();
+}
+function setTime(val) {
+  selectedTime = val;
+  ['5','15','30','60'].forEach(v => {
+    const el = document.getElementById('t-'+v);
+    el.className = 'sel-btn' + (v===val ? ' active-time' : '');
+  });
+  updateDealBtn();
+}
+function updateDealBtn() {
+  document.getElementById('deal-btn').disabled = !(selectedEnergy && selectedTime);
+}
+
+// ── Deal ──────────────────────────────────────────────────────────────────────
+function dealCard() {
+  const pool = getAllActivities().filter(a =>
+    (a.energy === selectedEnergy || a.energy === 'any') &&
+    (a.time === selectedTime || a.time === 'any')
+  );
+  if (!pool.length) {
+    document.getElementById('card-area').innerHTML = `
+      <div class="empty-state">
+        <span class="big">😶</span>
+        No activities for that combo yet.<br>
+        <button class="btn-save" style="margin-top:14px;padding:10px 20px;font-size:14px" onclick="openAddModal()">Add one</button>
+      </div>`;
+    return;
+  }
+  // Avoid repeating last card
+  let candidates = pool.filter(a => !currentCard || a.id !== currentCard.id);
+  if (!candidates.length) candidates = pool;
+  const activity = candidates[Math.floor(Math.random() * candidates.length)];
+  currentCard = activity;
+  updateStreak();
+  renderCard(activity);
+  document.getElementById('swipe-hint').style.display = 'block';
+}
+
+function renderCard(a) {
+  const energyLabel = {low:'🔋 Low', med:'⚡ Medium', high:'🔥 High', any:'✨ Any'}[a.energy] || a.energy;
+  const timeLabel   = {5:'5 min', 15:'15 min', 30:'30 min', 60:'1 hr', any:'Any time'}[a.time] || a.time+'min';
+  document.getElementById('card-area').innerHTML = `
+    <div class="activity-card" id="the-card"
+         ontouchstart="touchStart(event)"
+         ontouchend="touchEnd(event)"
+         onclick="dealCard()">
+      <span class="card-emoji">${a.emoji}</span>
+      <div class="card-title">${esc(a.title)}</div>
+      ${a.desc ? `<div class="card-desc">${esc(a.desc)}</div>` : ''}
+      <div class="card-tags">
+        <span class="tag">${energyLabel}</span>
+        <span class="tag">${timeLabel}</span>
+      </div>
+      <div class="card-actions" onclick="event.stopPropagation()">
+        <button class="card-btn primary" onclick="dealCard()">↻ Another</button>
+        <button class="card-btn" onclick="markDone()">✓ Done it</button>
+      </div>
+    </div>`;
+}
+
+function markDone() {
+  if (!currentCard) return;
+  const el = document.getElementById('the-card');
+  if (el) {
+    el.style.transform = 'scale(1.05)';
+    el.style.borderColor = 'var(--low)';
+    el.style.transition = '.3s';
+    setTimeout(() => dealCard(), 400);
+  }
+}
+
+// ── Swipe ─────────────────────────────────────────────────────────────────────
+function touchStart(e) { touchStartX = e.touches[0].clientX; }
+function touchEnd(e) {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 60) dealCard();
+}
+
+// ── Manage ────────────────────────────────────────────────────────────────────
+function showPage(name) {
+  currentPage = name;
+  document.getElementById('page-deck').style.display   = name==='deck'   ? 'flex' : 'none';
+  document.getElementById('page-manage').style.display = name==='manage' ? 'block': 'none';
+  ['deck','manage'].forEach(n => document.getElementById('nav-'+n).classList.toggle('active', n===name));
+  if (name === 'manage') renderManageList();
+}
+
+function renderManageList() {
+  const custom = getCustom();
+  const el = document.getElementById('manage-list');
+  if (!custom.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:20px 0;text-align:center">No custom activities yet. Add one!</div>';
+    return;
+  }
+  el.innerHTML = custom.map(a => `
+    <div class="activity-list-item">
+      <span class="ali-emoji">${a.emoji}</span>
+      <div class="ali-info">
+        <div class="ali-title">${esc(a.title)}</div>
+        <div class="ali-meta">${{low:'Low',med:'Medium',high:'High',any:'Any'}[a.energy]} · ${a.time==='any'?'Any time':a.time+' min'}</div>
+      </div>
+      <button class="ali-del" onclick="deleteActivity('${a.id}')">🗑</button>
+    </div>`).join('');
+}
+
+function deleteActivity(id) {
+  if (!confirm('Remove this activity?')) return;
+  setCustom(getCustom().filter(a => a.id !== id));
+  renderManageList();
+}
+
+// ── Add/Edit modal ────────────────────────────────────────────────────────────
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modal-title-text').textContent = 'Add Activity';
+  document.getElementById('f-emoji').value  = '';
+  document.getElementById('f-title').value  = '';
+  document.getElementById('f-desc').value   = '';
+  document.getElementById('f-energy').value = 'med';
+  document.getElementById('f-time').value   = '15';
+  document.getElementById('add-modal').classList.add('open');
+  setTimeout(() => document.getElementById('f-title').focus(), 300);
+}
+
+function saveActivity() {
+  const emoji  = document.getElementById('f-emoji').value.trim() || '🎯';
+  const title  = document.getElementById('f-title').value.trim();
+  const desc   = document.getElementById('f-desc').value.trim();
+  const energy = document.getElementById('f-energy').value;
+  const time   = document.getElementById('f-time').value;
+  if (!title) { document.getElementById('f-title').focus(); return; }
+
+  const custom = getCustom();
+  if (editingId) {
+    const i = custom.findIndex(a => a.id === editingId);
+    if (i >= 0) custom[i] = {id: editingId, emoji, title, desc, energy, time};
+  } else {
+    custom.push({ id: 'c' + Date.now(), emoji, title, desc, energy, time });
+  }
+  setCustom(custom);
+  closeModal('add-modal');
+  if (currentPage === 'manage') renderManageList();
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Streak modal ──────────────────────────────────────────────────────────────
+function showStreakInfo() {
+  const s = getStreak();
+  document.getElementById('streak-content').innerHTML = s.count > 0
+    ? `You've opened DopaDeck <strong>${s.count} day${s.count>1?'s':''}</strong> in a row.<br><br>
+       Last used: ${new Date(s.last).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}<br><br>
+       Keep it going — even one activity a day counts. 💜`
+    : `Start your streak today — use DopaDeck once and your streak begins!`;
+  document.getElementById('streak-modal').classList.add('open');
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── PWA: register service worker ──────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
